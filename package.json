@@ -1,6 +1,6 @@
 {
   "name": "conan-promote",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Promotes a Conan package from one user/channel to another",
   "main": "main.js",
   "author": "Dmitry Arkhipov <grisumbras@gmail.com>",
