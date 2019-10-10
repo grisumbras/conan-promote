@@ -1,0 +1,12 @@
+{
+  "name": "conan-promote",
+  "version": "0.1.0",
+  "description": "Promotes a Conan package from one user/channel to another",
+  "main": "main.js",
+  "author": "Dmitry Arkhipov <grisumbras@gmail.com>",
+  "license": "BSL-1.0",
+  "dependencies": {
+    "@actions/core": "^1.1.1",
+    "@actions/exec": "^1.0.1"
+  }
+}

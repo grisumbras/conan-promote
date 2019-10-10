@@ -1,0 +1,25 @@
+name: conan-promote
+author: Dmitry Arkhipov <grisumbras@gmail.com>
+description: Promotes a Conan package from one user/channel to another
+branding:
+  icon: arrow-up-circle
+  color: blue
+inputs:
+  name:
+    description: Source package name
+  version:
+    description: Source package description
+  channel:
+    description: Source package channel
+  user:
+    description: Source package user
+  reference:
+    description: Full source package reference
+  target-channel:
+    description: Target package channel
+    default: stable
+  target-user:
+    description: Target package user
+runs:
+  using: node12
+  main: main.js
