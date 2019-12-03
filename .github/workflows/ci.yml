@@ -1,4 +1,4 @@
-name: ci
+name: Build
 
 on:
   push:
@@ -19,8 +19,18 @@ jobs:
         with:
           node-version: '10.x'
 
+      - name: Configure Python
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
+
       - name: Install dependencies
-        run: npm install
+        run: |
+          npm install
+          pip install conan
+
+      - name: Run tests
+        run: npm run test
 
       - name: Publish
         if: github.event.ref == 'refs/heads/master'
@@ -34,9 +44,10 @@ jobs:
           remote_repo="https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
           git remote add origin "$remote_repo"
 
-          git add --all
+          git add --all --force *
           COMMIT_MESSAGE="Automated deployment: $(date -u) $GITHUB_SHA"
           git commit -m "$COMMIT_MESSAGE" | true
+
           git push origin "$remote_branch" --force
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

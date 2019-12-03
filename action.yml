@@ -1,6 +1,6 @@
 name: conan-promote
 author: Dmitry Arkhipov <grisumbras@gmail.com>
-description: Promotes a Conan package from one user/channel to another
+description: GitHub Action that promotes a Conan package from one user/channel to another
 branding:
   icon: arrow-up-circle
   color: blue
@@ -20,6 +20,10 @@ inputs:
     default: stable
   target-user:
     description: Target package user
+  install:
+    description: what version of Conan to install
+    required: false
+    default: latest
 runs:
   using: node12
   main: main.js
