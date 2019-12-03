@@ -2,12 +2,11 @@
 :toc: preamble
 
 [link=https://github.com/grisumbras/conan-promote/actions]
-image::https://github.com/grisumbras/conan-promote/workflows/ci/badge.svg[Build status]
+image::https://github.com/grisumbras/conan-promote/workflows/Build/badge.svg?branch=master[Build status]
 
 ____
 GitHub Action that promotes a Conan package from one user/channel to another
 ____
-
 
 == Usage
 The action promotes a Conan package from one user/channel to another using
@@ -20,50 +19,43 @@ Example usage:
 uses: grisumbras/conan-copy@latest
 ----
 
-
-== Inputs
-
-=== `name`
+=== Inputs
+name::
 Name of the package to promote. If not specified, `name` attribute of the
 package recipe is used.
-
-=== `version`
-Version  of the package to promote. If not specified, `version` attribute of the
-package recipe is used.
-
-=== `user`
+version::
+Version  of the package to promote. If not specified, `version` attribute of
+the package recipe is used.
+user::
 User (namespace) of the package to promote. If not specified
-
++
 . `CONAN_USERNAME` environment variable is used, if present;
 . or `default_user` attribute of the package recipe is used, if present;
 . or the first part of the value of `GITHUB_REPOSITORY` environment variable
   (before the slash) is used.
-
-=== `channel`
+channel::
 Channel of the package to promote. If not specified
-
++
 . `CONAN_CHANNEL` environment variable is used, if present;
 . or `default_channel` attribute of the package recipe is used, if present;
 . or the string `testing`.
-
-=== `reference`
+reference::
 Full reference of the package to promote. If specified all inputs that specify
 parts of the reference are ignored.
-
-=== `target-channel`
+target-channel::
 Channel to promote to. Default is `stable`.
-
-=== `target-user`
+target-user::
 User (namespace) to promote to. If not specified, equals to `user`.
-
+install::
+Install Conan before doing package promotion if the value is not `no`. If the
+value is `latest` install the latest version, otherwise install the version
+equal to that value. `latest` by default.
 
 == Maintainer
 Dmitry Arkhipov <grisumbras@gmail.com>
 
-
 == Contributing
 Patches welcome!
-
 
 == License
 link:LICENSE[BSL-1.0] (C) 2019 Dmitry Arkhipov
