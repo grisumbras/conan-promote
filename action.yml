@@ -20,6 +20,14 @@ inputs:
     default: stable
   target-user:
     description: Target package user
+  login:
+    description: Username to authenticate as
+  password:
+    description: Password to use to authenticate
+  url:
+    description: URL of the Conan remote to upload to
+  remote:
+    description: Name of the Conan remote to upload to
   install:
     description: what version of Conan to install
     required: false

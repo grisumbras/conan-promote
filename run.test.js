@@ -11,7 +11,7 @@ describe('with name input', () => {
   });
 
   afterAll(() => { delete process.env.INPUT_NAME; });
-})
+});
 
 
 describe('without name input', () => {
@@ -25,7 +25,7 @@ describe('without name input', () => {
   });
 
   afterAll(() => { process.chdir(cwd); });
-})
+});
 
 
 describe('with user input', () => {
@@ -36,7 +36,7 @@ describe('with user input', () => {
   });
 
   afterAll(() => { delete process.env.INPUT_USER; });
-})
+});
 
 
 describe('with attr in conanfile', () => {
@@ -48,7 +48,7 @@ describe('with attr in conanfile', () => {
   });
 
   afterAll(() => { process.chdir(cwd); });
-})
+});
 
 
 describe('no user input, no attr', () => {
@@ -66,7 +66,7 @@ describe('no user input, no attr', () => {
     process.chdir(cwd);
     delete process.env.GITHUB_REPOSITORY;
   });
-})
+});
 
 
 describe('with channel input', () => {
@@ -77,7 +77,7 @@ describe('with channel input', () => {
   });
 
   afterAll(() => { delete process.env.INPUT_CHANNEL; });
-})
+});
 
 
 describe('with attr in conanfile', () => {
@@ -89,7 +89,7 @@ describe('with attr in conanfile', () => {
   });
 
   afterAll(() => { process.chdir(cwd); });
-})
+});
 
 
 describe('no channel input, no attr', () => {
@@ -103,7 +103,7 @@ describe('no channel input, no attr', () => {
   });
 
   afterAll(() => { process.chdir(cwd); });
-})
+});
 
 
 describe('with reference input', () => {
@@ -116,7 +116,7 @@ describe('with reference input', () => {
   });
 
   afterAll(() => { delete process.env.INPUT_REFERENCE; });
-})
+});
 
 
 describe('without reference input', () => {
@@ -139,7 +139,7 @@ describe('without reference input', () => {
     delete process.env.INPUT_VERSION;
     delete process.env.INPUT_NAME;
   });
-})
+});
 
 
 test('user from reference', () => {
@@ -156,7 +156,7 @@ describe('with target-user input', () => {
   });
 
   afterAll(() => { delete process.env['INPUT_TARGET-USER']; });
-})
+});
 
 
 test('get_target_user without target-user input', () => {
@@ -165,29 +165,29 @@ test('get_target_user without target-user input', () => {
 
 
 describe('with default install input', () => {
-  beforeAll(() => { process.env.INPUT_INSTALL = "latest"; });
+  beforeAll(() => { process.env.INPUT_INSTALL = 'latest'; });
 
   test('get_conan_version', () => {
-    expect(run.get_conan_version()).toBe("conan");
+    expect(run.get_conan_version()).toBe('conan');
   });
 
   afterAll(() => { delete process.env.INPUT_INSTALL; });
-})
+});
 
 
 describe('with custon install input', () => {
-  beforeAll(() => { process.env.INPUT_INSTALL = "1.20.0"; });
+  beforeAll(() => { process.env.INPUT_INSTALL = '1.20.0'; });
 
   test('get_conan_version', () => {
-    expect(run.get_conan_version()).toBe("conan==1.20.0");
+    expect(run.get_conan_version()).toBe('conan==1.20.0');
   });
 
   afterAll(() => { delete process.env.INPUT_INSTALL; });
-})
+});
 
 
 describe('with disabled install', () => {
-  beforeAll(() => { process.env.INPUT_INSTALL = "no"; });
+  beforeAll(() => { process.env.INPUT_INSTALL = 'no'; });
 
   test('get_conan_version', () => {
     expect(run.get_conan_version()).toBe(null);
@@ -197,26 +197,200 @@ describe('with disabled install', () => {
 })
 
 
-describe('running', () => {
-  const cwd = process.cwd();
+describe('with remote input', () => {
+  beforeAll(() => { process.env.INPUT_REMOTE = 'foobar'; });
+
+  test('get_remote_name', () => {
+    expect(run.get_remote_name()).toBe('foobar');
+  });
+
+  afterAll(() => { delete process.env.INPUT_REMOTE; });
+});
+
+
+describe('with CONAN_UPLOAD with remote name part', () => {
+  beforeAll(() => { process.env.CONAN_UPLOAD = 'https://foo.bar@True@xxyy'; });
+
+  test('get_remote_name', () => {
+    expect(run.get_remote_name()).toBe('xxyy');
+  });
+
+  afterAll(() => { delete process.env.CONAN_UPLOAD; });
+});
+
+
+describe('with CONAN_UPLOAD without remote name part', () => {
+  beforeAll(() => { process.env.CONAN_UPLOAD = 'https://foo.bar@True'; });
+
+  test('get_remote_name', () => {
+    expect(run.get_remote_name()).toBe('upload');
+  });
+
+  afterAll(() => { delete process.env.CONAN_UPLOAD; });
+});
+
+
+test('get_remote_name without remote input', () => {
+  expect(run.get_remote_name()).toBe('upload');
+});
+
+
+describe('with url input', () => {
+  beforeAll(() => { process.env.INPUT_URL = 'https://example.com'; });
+
+  test('get_remote_url', () => {
+    expect(run.get_remote_url()).toBe('https://example.com');
+  });
+
+  afterAll(() => { delete process.env.INPUT_URL; });
+});
+
+
+describe('with CONAN_UPLOAD', () => {
+  beforeAll(() => { process.env.CONAN_UPLOAD = 'https://foobar.com'; });
+
+  test('get_remote_url', () => {
+    expect(run.get_remote_url()).toBe('https://foobar.com');
+  });
+
+  afterAll(() => { delete process.env.CONAN_UPLOAD; });
+});
+
+
+describe('with CONAN_UPLOAD with several parts', () => {
+  beforeAll(() => { process.env.CONAN_UPLOAD = 'https://foobar.com@True@n'; });
+
+  test('get_remote_url', () => {
+    expect(run.get_remote_url()).toBe('https://foobar.com');
+  });
+
+  afterAll(() => { delete process.env.CONAN_UPLOAD; });
+});
+
+
+test('get_remote_url() empty by default', () => {
+  expect(run.get_remote_url()).toBe('');
+});
+
+
+describe('adding a remote', () => {
+  beforeAll(() => { process.env.CONAN_UPLOAD = 'https://foo.bar@True@baz'; });
+
+  {
+    let commands = [];
+    const myexec = function(command, args) { commands.push([command, args]); };
+    test('get_remote() adds a remote', () => {
+      return run.get_remote(myexec).then(name => {
+        expect(name).toBe('baz');
+        expect(commands).toStrictEqual([
+          ['conan', ['remote', 'add', 'baz', 'https://foo.bar']]
+        ]);
+      });
+    });
+  }
+
+  {
+    let commands = [];
+    const myexec = function(command, args) {
+      commands.push([command, args]);
+      throw Error("no way");
+    };
+    test('get_remote() is fault-tolerant', () => {
+      return run.get_remote(myexec).then(name => {
+        expect(name).toBe('baz');
+        expect(commands).toStrictEqual([
+          ['conan', ['remote', 'add', 'baz', 'https://foo.bar']]
+        ]);
+      });
+    });
+  }
+
+  afterAll(() => { delete process.env.CONAN_UPLOAD; });
+});
+
+
+test('make_target_reference()', () => {
+  expect(run.make_target_reference('a/b@c/d', 'q/w')).toBe('a/b@q/w');
+});
+
+
+describe('with login input', () => {
+  beforeAll(() => { process.env.INPUT_LOGIN = 'jimmy'; });
+
+  test('get_login_user', () => {
+    expect(run.get_login_user('mark')).toBe('jimmy');
+  });
+
+  afterAll(() => { delete process.env.INPUT_LOGIN; });
+});
+
+
+describe('with CONAN_LOGIN_USERNAME envar', () => {
+  beforeAll(() => { process.env.CONAN_LOGIN_USERNAME = 'billy'; });
+
+  test('get_login_user', () => {
+    expect(run.get_login_user('mark')).toBe('billy');
+  });
+
+  afterAll(() => { delete process.env.CONAN_LOGIN_USERNAME; });
+});
+
+
+test('get_login_user default', () => {
+  expect(run.get_login_user('mark')).toBe('mark');
+});
+
+
+describe('with password input', () => {
+  beforeAll(() => { process.env.INPUT_PASSWORD = 'topsekret'; });
+
+  test('get_password', () => {
+    expect(run.get_password()).toBe('topsekret');
+  });
+
+  afterAll(() => { delete process.env.INPUT_PASSWORD; });
+});
+
+
+describe('with CONAN_PASSWORD envar', () => {
+  beforeAll(() => { process.env.CONAN_PASSWORD = 'mypassword'; });
+
+  test('get_password', () => {
+    expect(run.get_password()).toBe('mypassword');
+  });
+
+  afterAll(() => { delete process.env.CONAN_PASSWORD; });
+});
+
+
+describe('full run', () => {
   beforeAll(() => {
-    process.env.INPUT_INSTALL = "no";
-    process.env.INPUT_REFERENCE = "a/b@c/d";
-    process.env["INPUT_TARGET-CHANNEL"] = "public";
+    process.env.INPUT_INSTALL = 'latest';
+    process.env.INPUT_REFERENCE = 'a/b@c/d';
+    process.env.CONAN_UPLOAD = 'https://example.com';
+    process.env['INPUT_TARGET-CHANNEL'] = 'public';
+    process.env.INPUT_PASSWORD = '1';
   });
 
   let commands = [];
   const myexec = function(command, args) { commands.push([command, args]); };
   test('run() runs', () => {
     return run.run(myexec).then(() => {
-      expect(commands).toStrictEqual([
-        ['conan', ['copy', '--all', 'a/b@c/d', 'c/public']]
-      ]);
+      expect(commands).toStrictEqual(
+        [ ['pip', ['install', 'conan']]
+        , ['conan', ['remote', 'add', 'upload', 'https://example.com']]
+        , ['conan', ['download', '-r', 'upload', 'a/b@c/d']]
+        , ['conan', ['copy', '--all', 'a/b@c/d', 'c/public']]
+        , ['conan', ['user', '-p', '1', '-r', 'upload', 'c']]
+        , ['conan', ['upload', '-c', '--all', '-r', 'upload', 'a/b@c/public']]
+        ]);
     });
   });
 
   afterAll(() => {
-    delete process.env["INPUT_TARGET-CHANNEL"];
+    delete process.env.INPUT_PASSWORD;
+    delete process.env['INPUT_TARGET-CHANNEL'];
+    delete process.env.INPUT_UPLOAD;
     delete process.env.INPUT_REFERENCE;
     delete process.env.INPUT_INSTALL;
   });

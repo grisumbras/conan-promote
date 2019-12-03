@@ -12,17 +12,42 @@ function user_from_reference(reference) {
 }
 
 function get_target_user(reference) {
-  let result = core.getInput('target-user');
-  if (!result) { result = user_from_reference(reference); }
-  return result;
+  return core.getInput('target-user') || user_from_reference(reference);
+}
+
+function get_remote_part(index) {
+  return get_env('CONAN_UPLOAD').split('@', 3)[index];
+}
+
+function get_remote_name() {
+  return core.getInput('remote') || get_remote_part(2) || 'upload';
+}
+
+function get_remote_url() {
+  return core.getInput('url') || get_remote_part(0);
+}
+
+function make_target_reference(src_ref, target_ns) {
+  src_ref = src_ref || '';
+  src_ref = src_ref.split('@', 2)
+  if (src_ref.length < 2) { src_ref = ['', '']; }
+  return `${src_ref[0].trim()}@${target_ns}`;
+}
+
+function get_login_user(user) {
+  return core.getInput('login') || get_env('CONAN_LOGIN_USERNAME') || user;
+}
+
+function get_password() {
+  return core.getInput('password') || get_env('CONAN_PASSWORD');
 }
 
 function get_conan_version() {
   const version = core.getInput('install');
-  let result = "conan";
-  if ("no" == version) {
+  let result = 'conan';
+  if ('no' == version) {
     return null;
-  } if ("latest" != version) {
+  } if ('latest' != version) {
     result = `${result}==${version}`;
   }
   return result;
@@ -89,17 +114,76 @@ async function get_pkg_reference() {
   return result;
 }
 
-async function run(execute) {
-  const pkg_reference = await get_pkg_reference();
-  console.log(`Using full package reference ${pkg_reference}`);
+async function get_remote(execute) {
+  const name = get_remote_name();
+  const url = get_remote_url();
+  if (!name || !url) { return ""; }
 
-  const target_user = await get_target_user(pkg_reference);
+  try {
+    await execute('conan', ['remote', 'add', name, url]);
+  } catch (e) {
+    console.log(
+      `Failed adding Conan remote ${name}, assume it already exists...`
+    );
+  }
+
+  return name;
+}
+
+async function authenticate(execute, remote, user) {
+  const login = get_login_user(user);
+  if (!login) {
+    console.log('No login username, skipping upload...');
+    return;
+  }
+
+  const password = get_password(user);
+  if (!password) {
+    console.log('No password, skipping upload...');
+    return;
+  }
+
+  console.log(`Authenticating with remote '${remote}' as ${login}...`);
+  await execute('conan', ['user', '-p', password, '-r', remote, login]);
+
+  return true;
+}
+
+async function run(execute) {
+  if (!execute) { execute = exec.exec; }
+
+  const conan_version = get_conan_version();
+  if (conan_version) {
+    console.log(`Installing ${conan_version}...`)
+    await execute('pip', ["install", conan_version]);
+  }
+
+  const src_reference = await get_pkg_reference();
+  console.log(`Source package reference ${src_reference}`);
+
+  // potentially adds the remote
+  const remote = await get_remote(execute);
+  // download source packages from the remote
+  if (remote) {
+    await execute('conan', ['download', '-r', remote, src_reference]);
+  }
+
+  const target_user = await get_target_user(src_reference);
   const target_channel = core.getInput('target-channel');
   const target = `${target_user}/${target_channel}`;
-  console.log(`Promoting to ${target}`);
+  console.log(`Promoting to ${target}...`);
 
-  if (!execute) { execute = exec.exec; }
-  await execute('conan', ['copy', '--all', pkg_reference, target]);
+  // do the package promotion
+  await execute('conan', ['copy', '--all', src_reference, target]);
+
+  // upload new packages back
+  if (remote && await authenticate(execute, remote, target_user)) {
+    const tgt_reference = make_target_reference(src_reference, target);
+    console.log(`Uploading packages ${tgt_reference} to ${remote}...`);
+    await execute(
+      'conan', ['upload', '-c', '--all', '-r', remote, tgt_reference]
+    );
+  }
 }
 
 
@@ -111,5 +195,11 @@ module.exports =
   , user_from_reference: user_from_reference
   , get_target_user: get_target_user
   , get_conan_version: get_conan_version
+  , get_remote_name: get_remote_name
+  , get_remote_url: get_remote_url
+  , get_remote: get_remote
+  , make_target_reference: make_target_reference
+  , get_login_user: get_login_user
+  , get_password: get_password
   , run: run
   };

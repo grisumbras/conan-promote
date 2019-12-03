@@ -23,9 +23,11 @@ uses: grisumbras/conan-copy@latest
 name::
 Name of the package to promote. If not specified, `name` attribute of the
 package recipe is used.
+
 version::
 Version  of the package to promote. If not specified, `version` attribute of
 the package recipe is used.
+
 user::
 User (namespace) of the package to promote. If not specified
 +
@@ -33,19 +35,46 @@ User (namespace) of the package to promote. If not specified
 . or `default_user` attribute of the package recipe is used, if present;
 . or the first part of the value of `GITHUB_REPOSITORY` environment variable
   (before the slash) is used.
+
 channel::
 Channel of the package to promote. If not specified
 +
 . `CONAN_CHANNEL` environment variable is used, if present;
 . or `default_channel` attribute of the package recipe is used, if present;
 . or the string `testing`.
+
 reference::
 Full reference of the package to promote. If specified all inputs that specify
 parts of the reference are ignored.
+
 target-channel::
 Channel to promote to. Default is `stable`.
+
 target-user::
-User (namespace) to promote to. If not specified, equals to `user`.
+User (namespace) to promote to. If not specified, equals to the user component
+of the source package's reference.
+
+login::
+Username to authenticate as. If not specified
++
+. `CONAN_LOGIN_USERNAME` environment variable is used, if present;
+. or value of `target-user` input is used.
+
+password::
+Password to use to authenticate. If not specified, `CONAN_PASSWORD` environment
+variable is used. If still empty, promoted packages won't be uploaded. This is
+normally stored as a repository secret.
+
+url::
+URL of the remote to upload to. If not specified, `CONAN_UPLOAD` environment
+variable is used (the value is split by `@` character and the first segment is
+picked).
+
+remote::
+name of the remote to upload to. If not specified, `CONAN_UPLOAD` environment
+variable is used if present (the value is split by `@` character and the third
+segment is picked). Otherwise, the strig `upload` is used.
+
 install::
 Install Conan before doing package promotion if the value is not `no`. If the
 value is `latest` install the latest version, otherwise install the version
