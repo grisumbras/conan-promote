@@ -157,11 +157,12 @@ async function run(execute) {
     await execute('pip', ["install", conan_version]);
   }
 
+  // potentially adds the remote
+  const remote = await get_remote(execute);
+
   const src_reference = await get_pkg_reference();
   core.info(`Source package reference ${src_reference}`);
 
-  // potentially adds the remote
-  const remote = await get_remote(execute);
   // download source packages from the remote
   if (remote) {
     await execute('conan', ['download', '-r', remote, src_reference]);
