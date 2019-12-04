@@ -57,7 +57,6 @@ async function get_output(command, ...args) {
   let output = '';
   const opts =
     { listeners: { stdout: (data) => { output += data.toString(); } }
-    , silent: true
     };
   await exec.exec(command, args, opts);
 
@@ -122,7 +121,7 @@ async function get_remote(execute) {
   try {
     await execute('conan', ['remote', 'add', name, url]);
   } catch (e) {
-    console.log(
+    core.info(
       `Failed adding Conan remote ${name}, assume it already exists...`
     );
   }
@@ -133,17 +132,17 @@ async function get_remote(execute) {
 async function authenticate(execute, remote, user) {
   const login = get_login_user(user);
   if (!login) {
-    console.log('No login username, skipping upload...');
+    core.info('No login username, skipping upload...');
     return;
   }
 
   const password = get_password(user);
   if (!password) {
-    console.log('No password, skipping upload...');
+    core.info('No password, skipping upload...');
     return;
   }
 
-  console.log(`Authenticating with remote '${remote}' as ${login}...`);
+  core.info(`Authenticating with remote '${remote}' as ${login}...`);
   await execute('conan', ['user', '-p', password, '-r', remote, login]);
 
   return true;
@@ -154,12 +153,12 @@ async function run(execute) {
 
   const conan_version = get_conan_version();
   if (conan_version) {
-    console.log(`Installing ${conan_version}...`)
+    core.info(`Installing ${conan_version}...`)
     await execute('pip', ["install", conan_version]);
   }
 
   const src_reference = await get_pkg_reference();
-  console.log(`Source package reference ${src_reference}`);
+  core.info(`Source package reference ${src_reference}`);
 
   // potentially adds the remote
   const remote = await get_remote(execute);
@@ -171,7 +170,7 @@ async function run(execute) {
   const target_user = await get_target_user(src_reference);
   const target_channel = core.getInput('target-channel');
   const target = `${target_user}/${target_channel}`;
-  console.log(`Promoting to ${target}...`);
+  core.info(`Promoting to ${target}...`);
 
   // do the package promotion
   await execute('conan', ['copy', '--all', src_reference, target]);
@@ -179,7 +178,7 @@ async function run(execute) {
   // upload new packages back
   if (remote && await authenticate(execute, remote, target_user)) {
     const tgt_reference = make_target_reference(src_reference, target);
-    console.log(`Uploading packages ${tgt_reference} to ${remote}...`);
+    core.info(`Uploading packages ${tgt_reference} to ${remote}...`);
     await execute(
       'conan', ['upload', '-c', '--all', '-r', remote, tgt_reference]
     );
