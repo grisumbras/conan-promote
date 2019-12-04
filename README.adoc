@@ -9,14 +9,15 @@ GitHub Action that promotes a Conan package from one user/channel to another
 ____
 
 == Usage
-The action promotes a Conan package from one user/channel to another using
-`conan copy`.
+The action downloads packages matching a particular reference from a remote,
+promotes them from one user/channel to another using `conan copy` and then
+uploads the new packages back.
 
 Example usage:
 
 [source,yaml]
 ----
-uses: grisumbras/conan-copy@latest
+uses: grisumbras/conan-promote@latest
 ----
 
 === Inputs
